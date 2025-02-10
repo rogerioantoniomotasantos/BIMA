@@ -55,35 +55,49 @@ def calculate_wall_orientation(bounding_box):
 
 def create_ifc_project_structure(model):
     """Creates the base project structure in an IFC file."""
+    # Create the root project entity
     project = run("root.create_entity", model, ifc_class="IfcProject", name="Multi_Wall_Project")
     run("unit.assign_unit", model, length={"is_metric": True, "raw": "METERS"})
 
+    # Create contexts
     context = run("context.add_context", model, context_type="Model")
     body = run("context.add_context", model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW")
 
+    # Create hierarchy: Site -> Building -> Storey
     site = run("root.create_entity", model, ifc_class="IfcSite", name="Site")
     building = run("root.create_entity", model, ifc_class="IfcBuilding", name="Building A")
     storey = run("root.create_entity", model, ifc_class="IfcBuildingStorey", name="Ground Floor")
 
-    run("aggregate.assign_object", model, relating_object=project, product=site)
-    run("aggregate.assign_object", model, relating_object=site, product=building)
-    run("aggregate.assign_object", model, relating_object=building, product=storey)
+    # Use 'products' instead of 'product' as the new API expects lists
+    run("aggregate.assign_object", model, relating_object=project, products=[site])
+    run("aggregate.assign_object", model, relating_object=site, products=[building])
+    run("aggregate.assign_object", model, relating_object=building, products=[storey])
 
+    # Return key entities for further use
     return project, context, body, storey
+
 
 def create_wall(model, body, storey, base_point, orientation, dimensions, wall_name):
     """Creates a wall in the IFC model."""
+    # Create the wall entity
     wall = run("root.create_entity", model, ifc_class="IfcWall", name=wall_name)
+    
+    # Define the wall's placement
     wall_origin = model.createIfcAxis2Placement3D(
         model.createIfcCartesianPoint(base_point),
         model.createIfcDirection((0.0, 0.0, 1.0)),
         model.createIfcDirection(orientation),
     )
     wall.ObjectPlacement = model.createIfcLocalPlacement(None, wall_origin)
+    
+    # Add wall geometry representation
     wall_representation = run("geometry.add_wall_representation", model, context=body,
                               length=dimensions[2], height=dimensions[1], thickness=dimensions[0])
     run("geometry.assign_representation", model, product=wall, representation=wall_representation)
-    run("spatial.assign_container", model, relating_structure=storey, product=wall)
+    
+    # Assign the wall to the storey
+    run("spatial.assign_container", model, relating_structure=storey, products=[wall])
+
 
 def save_parameters_to_excel(parameters, output_excel_path):
     """Saves entity parameters to an Excel file."""

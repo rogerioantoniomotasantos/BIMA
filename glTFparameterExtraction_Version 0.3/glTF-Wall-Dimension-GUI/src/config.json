@@ -1,6 +1,0 @@
-{
-  "gltf_file_path": "data/Wall_Test.gltf",
-  "extras_output_path": "data/extras_data.xlsx",
-  "distances_output_path": "data/distances_data.xlsx",
-  "ifc_output_path": "output/dimensions2IfcWall.ifc"
-}
