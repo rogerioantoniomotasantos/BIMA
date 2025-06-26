@@ -62,7 +62,7 @@ def adjust_base_point(center_point, dimensions):
     return [
         center_point[0] - width / 2,
         center_point[1] - length / 2,
-        center_point[2]
+        center_point[2] - height /2
     ]
 
 def create_ifc_entity(model, context, storey, base_point, dimensions, object_name, ifc_class):
@@ -119,10 +119,7 @@ def process_multiple_gltf_files(gltf_files, output_ifc_path):
         gltf_extras = extract_extras_from_gltf(gltf_file)
 
         object_type = gltf_extras.get("object_type", "unknown").lower()
-        ifc_class = catalog.get(object_type)
-        if not ifc_class:
-            print(f"Warning: No mapping found for object type '{object_type}' in {gltf_file}. Skipping.")
-            continue
+        ifc_class = catalog.get(object_type, "IfcBuildingElementProxy")  # Fallback to IfcBuildingElementProxy
 
         dimensions = gltf_extras.get("bounding_box_size", [1.0, 1.0, 1.0])
         dimensions = (dimensions + [1.0] * 3)[:3]  # Ensure 3 values
