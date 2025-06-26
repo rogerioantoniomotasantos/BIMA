@@ -8,6 +8,8 @@
     
   - Implementation of CDE "made" by myself with a brief course of application in the company
 
+![image](https://github.com/user-attachments/assets/69c64e37-5dc9-494c-a859-9dbb062e9bbb)
+
   ----------------------------------------------------------------
 
   # QUESTIONS
